@@ -1,0 +1,2003 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Online Quiz API",
+    "description": "API для системы онлайн-квизов с поддержкой категорий, вопросов, ответов и попыток прохождения",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "username": {
+            "type": "string",
+            "example": "johndoe"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "660e8400-e29b-41d4-a716-446655440000"
+          },
+          "name": {
+            "type": "string",
+            "example": "Программирование"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          }
+        }
+      },
+      "Quiz": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "770e8400-e29b-41d4-a716-446655440000"
+          },
+          "title": {
+            "type": "string",
+            "example": "JavaScript Основы"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Тест на знание основ JavaScript"
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "660e8400-e29b-41d4-a716-446655440000"
+          },
+          "timeLimit": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Время в секундах",
+            "example": 1800
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            }
+          }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "880e8400-e29b-41d4-a716-446655440000"
+          },
+          "quizId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "770e8400-e29b-41d4-a716-446655440000"
+          },
+          "text": {
+            "type": "string",
+            "example": "Что такое замыкание в JavaScript?"
+          },
+          "order": {
+            "type": "integer",
+            "example": 1
+          },
+          "points": {
+            "type": "integer",
+            "example": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Answer"
+            }
+          }
+        }
+      },
+      "Answer": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "990e8400-e29b-41d4-a716-446655440000"
+          },
+          "questionId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "880e8400-e29b-41d4-a716-446655440000"
+          },
+          "text": {
+            "type": "string",
+            "example": "Функция, которая имеет доступ к переменным внешней функции"
+          },
+          "isCorrect": {
+            "type": "boolean",
+            "example": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          }
+        }
+      },
+      "Attempt": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "aa0e8400-e29b-41d4-a716-446655440000"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "quizId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "770e8400-e29b-41d4-a716-446655440000"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": "2024-01-15T11:00:00.000Z"
+          },
+          "score": {
+            "type": "integer",
+            "nullable": true,
+            "example": 8
+          },
+          "maxScore": {
+            "type": "integer",
+            "nullable": true,
+            "example": 10
+          },
+          "status": {
+            "type": "string",
+            "enum": ["IN_PROGRESS", "COMPLETED", "ABANDONED"],
+            "example": "COMPLETED"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Регистрация нового пользователя",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "username", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                  },
+                  "username": {
+                    "type": "string",
+                    "minLength": 3,
+                    "example": "johndoe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Пользователь успешно зарегистрирован",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "refreshToken": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные или пользователь уже существует"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Вход пользователя",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "password"],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешный вход",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "refreshToken": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Неверные учетные данные"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Обновление токена",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["refreshToken"],
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Токен успешно обновлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "refreshToken": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Недействительный токен"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Выход пользователя",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный выход",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Logged out successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Получить список всех категорий",
+        "responses": {
+          "200": {
+            "description": "Список категорий",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Category"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "660e8400-e29b-41d4-a716-446655440000",
+                    "name": "Программирование",
+                    "createdAt": "2024-01-15T10:30:00.000Z",
+                    "updatedAt": "2024-01-15T10:30:00.000Z"
+                  },
+                  {
+                    "id": "660e8400-e29b-41d4-a716-446655440001",
+                    "name": "Математика",
+                    "createdAt": "2024-01-15T11:00:00.000Z",
+                    "updatedAt": "2024-01-15T11:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Создать новую категорию",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "Наука"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Категория успешно создана",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                },
+                "example": {
+                  "id": "660e8400-e29b-41d4-a716-446655440002",
+                  "name": "Наука",
+                  "createdAt": "2024-01-15T12:00:00.000Z",
+                  "updatedAt": "2024-01-15T12:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          }
+        }
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Получить категорию по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "660e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Категория найдена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                },
+                "example": {
+                  "id": "660e8400-e29b-41d4-a716-446655440000",
+                  "name": "Программирование",
+                  "createdAt": "2024-01-15T10:30:00.000Z",
+                  "updatedAt": "2024-01-15T10:30:00.000Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Категория не найдена"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Categories"],
+        "summary": "Обновить категорию",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "660e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "Программирование и разработка"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Категория успешно обновлена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                },
+                "example": {
+                  "id": "660e8400-e29b-41d4-a716-446655440000",
+                  "name": "Программирование и разработка",
+                  "createdAt": "2024-01-15T10:30:00.000Z",
+                  "updatedAt": "2024-01-15T13:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "404": {
+            "description": "Категория не найдена"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Categories"],
+        "summary": "Удалить категорию",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "660e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Категория успешно удалена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "404": {
+            "description": "Категория не найдена"
+          }
+        }
+      }
+    },
+    "/quizzes": {
+      "get": {
+        "tags": ["Quizzes"],
+        "summary": "Получить список всех квизов",
+        "responses": {
+          "200": {
+            "description": "Список квизов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Quiz"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "770e8400-e29b-41d4-a716-446655440000",
+                    "title": "JavaScript Основы",
+                    "description": "Тест на знание основ JavaScript",
+                    "categoryId": "660e8400-e29b-41d4-a716-446655440000",
+                    "timeLimit": 1800,
+                    "createdAt": "2024-01-15T10:30:00.000Z",
+                    "updatedAt": "2024-01-15T10:30:00.000Z",
+                    "category": {
+                      "id": "660e8400-e29b-41d4-a716-446655440000",
+                      "name": "Программирование",
+                      "createdAt": "2024-01-15T10:30:00.000Z",
+                      "updatedAt": "2024-01-15T10:30:00.000Z"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Quizzes"],
+        "summary": "Создать новый квиз",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "categoryId"],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Python для начинающих"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Тест на знание основ Python"
+                  },
+                  "categoryId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "660e8400-e29b-41d4-a716-446655440000"
+                  },
+                  "timeLimit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Время в секундах",
+                    "example": 3600
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Квиз успешно создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quiz"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          }
+        }
+      }
+    },
+    "/quizzes/search": {
+      "get": {
+        "tags": ["Quizzes"],
+        "summary": "Поиск квизов",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "JavaScript"
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "660e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Результаты поиска",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Quiz"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quizzes/{id}": {
+      "get": {
+        "tags": ["Quizzes"],
+        "summary": "Получить квиз по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "770e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Квиз найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quiz"
+                },
+                "example": {
+                  "id": "770e8400-e29b-41d4-a716-446655440000",
+                  "title": "JavaScript Основы",
+                  "description": "Тест на знание основ JavaScript",
+                  "categoryId": "660e8400-e29b-41d4-a716-446655440000",
+                  "timeLimit": 1800,
+                  "createdAt": "2024-01-15T10:30:00.000Z",
+                  "updatedAt": "2024-01-15T10:30:00.000Z",
+                  "category": {
+                    "id": "660e8400-e29b-41d4-a716-446655440000",
+                    "name": "Программирование",
+                    "createdAt": "2024-01-15T10:30:00.000Z",
+                    "updatedAt": "2024-01-15T10:30:00.000Z"
+                  },
+                  "questions": [
+                    {
+                      "id": "880e8400-e29b-41d4-a716-446655440000",
+                      "quizId": "770e8400-e29b-41d4-a716-446655440000",
+                      "text": "Что такое замыкание в JavaScript?",
+                      "order": 1,
+                      "points": 1,
+                      "createdAt": "2024-01-15T10:30:00.000Z",
+                      "updatedAt": "2024-01-15T10:30:00.000Z",
+                      "answers": [
+                        {
+                          "id": "990e8400-e29b-41d4-a716-446655440000",
+                          "questionId": "880e8400-e29b-41d4-a716-446655440000",
+                          "text": "Функция, которая имеет доступ к переменным внешней функции",
+                          "isCorrect": true,
+                          "createdAt": "2024-01-15T10:30:00.000Z",
+                          "updatedAt": "2024-01-15T10:30:00.000Z"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Квиз не найден"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Quizzes"],
+        "summary": "Обновить квиз",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "770e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "JavaScript Продвинутый"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Тест на знание продвинутых концепций JavaScript"
+                  },
+                  "categoryId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "660e8400-e29b-41d4-a716-446655440000"
+                  },
+                  "timeLimit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 2400
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Квиз успешно обновлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quiz"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "404": {
+            "description": "Квиз не найден"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Quizzes"],
+        "summary": "Удалить квиз",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "770e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Квиз успешно удален",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quiz"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "404": {
+            "description": "Квиз не найден"
+          }
+        }
+      }
+    },
+    "/quizzes/{id}/leaderboard": {
+      "get": {
+        "tags": ["Quizzes"],
+        "summary": "Получить лидерборд квиза",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "770e8400-e29b-41d4-a716-446655440000"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "example": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Лидерборд квиза",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "score": {
+                        "type": "integer"
+                      },
+                      "maxScore": {
+                        "type": "integer"
+                      },
+                      "completedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "user": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "id": "aa0e8400-e29b-41d4-a716-446655440000",
+                    "score": 10,
+                    "maxScore": 10,
+                    "completedAt": "2024-01-15T11:00:00.000Z",
+                    "user": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "username": "johndoe",
+                      "email": "user@example.com"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "404": {
+            "description": "Квиз не найден"
+          }
+        }
+      }
+    },
+    "/questions": {
+      "get": {
+        "tags": ["Questions"],
+        "summary": "Получить вопросы квиза",
+        "parameters": [
+          {
+            "name": "quizId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "770e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список вопросов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Question"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "880e8400-e29b-41d4-a716-446655440000",
+                    "quizId": "770e8400-e29b-41d4-a716-446655440000",
+                    "text": "Что такое замыкание в JavaScript?",
+                    "order": 1,
+                    "points": 1,
+                    "createdAt": "2024-01-15T10:30:00.000Z",
+                    "updatedAt": "2024-01-15T10:30:00.000Z"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Questions"],
+        "summary": "Создать новый вопрос",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["quizId", "text", "order", "points"],
+                "properties": {
+                  "quizId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "770e8400-e29b-41d4-a716-446655440000"
+                  },
+                  "text": {
+                    "type": "string",
+                    "example": "Что такое Promise в JavaScript?"
+                  },
+                  "order": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 2
+                  },
+                  "points": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 2
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Вопрос успешно создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          }
+        }
+      }
+    },
+    "/questions/{id}": {
+      "get": {
+        "tags": ["Questions"],
+        "summary": "Получить вопрос по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "880e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Вопрос найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Вопрос не найден"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Questions"],
+        "summary": "Обновить вопрос",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "880e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "quizId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "770e8400-e29b-41d4-a716-446655440000"
+                  },
+                  "text": {
+                    "type": "string",
+                    "example": "Что такое async/await в JavaScript?"
+                  },
+                  "order": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 2
+                  },
+                  "points": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 3
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Вопрос успешно обновлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "404": {
+            "description": "Вопрос не найден"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Questions"],
+        "summary": "Удалить вопрос",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "880e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Вопрос успешно удален",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Question"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "404": {
+            "description": "Вопрос не найден"
+          }
+        }
+      }
+    },
+    "/answers": {
+      "get": {
+        "tags": ["Answers"],
+        "summary": "Получить варианты ответа для вопроса",
+        "parameters": [
+          {
+            "name": "questionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "880e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список вариантов ответа",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Answer"
+                  }
+                },
+                "example": [
+                  {
+                    "id": "990e8400-e29b-41d4-a716-446655440000",
+                    "questionId": "880e8400-e29b-41d4-a716-446655440000",
+                    "text": "Функция, которая имеет доступ к переменным внешней функции",
+                    "isCorrect": true,
+                    "createdAt": "2024-01-15T10:30:00.000Z",
+                    "updatedAt": "2024-01-15T10:30:00.000Z"
+                  },
+                  {
+                    "id": "990e8400-e29b-41d4-a716-446655440001",
+                    "questionId": "880e8400-e29b-41d4-a716-446655440000",
+                    "text": "Функция внутри функции",
+                    "isCorrect": false,
+                    "createdAt": "2024-01-15T10:30:00.000Z",
+                    "updatedAt": "2024-01-15T10:30:00.000Z"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Answers"],
+        "summary": "Добавить вариант ответа",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["questionId", "text", "isCorrect"],
+                "properties": {
+                  "questionId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "880e8400-e29b-41d4-a716-446655440000"
+                  },
+                  "text": {
+                    "type": "string",
+                    "example": "Функция высшего порядка"
+                  },
+                  "isCorrect": {
+                    "type": "boolean",
+                    "example": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Вариант ответа успешно создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Answer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          }
+        }
+      }
+    },
+    "/answers/{id}": {
+      "get": {
+        "tags": ["Answers"],
+        "summary": "Получить вариант ответа по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "990e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Вариант ответа найден",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Answer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Вариант ответа не найден"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Answers"],
+        "summary": "Обновить вариант ответа",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "990e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "questionId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "880e8400-e29b-41d4-a716-446655440000"
+                  },
+                  "text": {
+                    "type": "string",
+                    "example": "Функция с лексическим окружением"
+                  },
+                  "isCorrect": {
+                    "type": "boolean",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Вариант ответа успешно обновлен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Answer"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "404": {
+            "description": "Вариант ответа не найден"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Answers"],
+        "summary": "Удалить вариант ответа",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "990e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Вариант ответа успешно удален",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Answer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "404": {
+            "description": "Вариант ответа не найден"
+          }
+        }
+      }
+    },
+    "/attempts/start": {
+      "post": {
+        "tags": ["Attempts"],
+        "summary": "Начать попытку прохождения квиза",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["quizId"],
+                "properties": {
+                  "quizId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "770e8400-e29b-41d4-a716-446655440000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Попытка успешно начата",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attempt"
+                },
+                "example": {
+                  "id": "aa0e8400-e29b-41d4-a716-446655440000",
+                  "userId": "550e8400-e29b-41d4-a716-446655440000",
+                  "quizId": "770e8400-e29b-41d4-a716-446655440000",
+                  "startedAt": "2024-01-15T10:30:00.000Z",
+                  "completedAt": null,
+                  "score": null,
+                  "maxScore": null,
+                  "status": "IN_PROGRESS"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          }
+        }
+      }
+    },
+    "/attempts/{id}": {
+      "get": {
+        "tags": ["Attempts"],
+        "summary": "Получить состояние попытки",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "aa0e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Состояние попытки",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Attempt"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "quiz": {
+                          "$ref": "#/components/schemas/Quiz"
+                        },
+                        "attemptAnswers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "questionId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "answerId": {
+                                "type": "string",
+                                "format": "uuid",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "id": "aa0e8400-e29b-41d4-a716-446655440000",
+                  "userId": "550e8400-e29b-41d4-a716-446655440000",
+                  "quizId": "770e8400-e29b-41d4-a716-446655440000",
+                  "startedAt": "2024-01-15T10:30:00.000Z",
+                  "completedAt": null,
+                  "score": null,
+                  "maxScore": null,
+                  "status": "IN_PROGRESS",
+                  "quiz": {
+                    "id": "770e8400-e29b-41d4-a716-446655440000",
+                    "title": "JavaScript Основы",
+                    "description": "Тест на знание основ JavaScript",
+                    "timeLimit": 1800
+                  },
+                  "attemptAnswers": []
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "403": {
+            "description": "Доступ запрещен"
+          },
+          "404": {
+            "description": "Попытка не найдена"
+          }
+        }
+      }
+    },
+    "/attempts/{id}/answer": {
+      "post": {
+        "tags": ["Attempts"],
+        "summary": "Отправить ответ на вопрос",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "aa0e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["questionId", "answerId"],
+                "properties": {
+                  "questionId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "880e8400-e29b-41d4-a716-446655440000"
+                  },
+                  "answerId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "990e8400-e29b-41d4-a716-446655440000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ответ успешно сохранен",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "bb0e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "attemptId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "aa0e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "questionId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "880e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "answerId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "example": "990e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2024-01-15T10:35:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Неверные данные"
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "403": {
+            "description": "Доступ запрещен"
+          },
+          "404": {
+            "description": "Попытка не найдена"
+          }
+        }
+      }
+    },
+    "/attempts/{id}/complete": {
+      "post": {
+        "tags": ["Attempts"],
+        "summary": "Завершить попытку прохождения квиза",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "aa0e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Попытка успешно завершена",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Attempt"
+                },
+                "example": {
+                  "id": "aa0e8400-e29b-41d4-a716-446655440000",
+                  "userId": "550e8400-e29b-41d4-a716-446655440000",
+                  "quizId": "770e8400-e29b-41d4-a716-446655440000",
+                  "startedAt": "2024-01-15T10:30:00.000Z",
+                  "completedAt": "2024-01-15T11:00:00.000Z",
+                  "score": 8,
+                  "maxScore": 10,
+                  "status": "COMPLETED"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "403": {
+            "description": "Доступ запрещен"
+          },
+          "404": {
+            "description": "Попытка не найдена"
+          }
+        }
+      }
+    },
+    "/attempts/{id}/result": {
+      "get": {
+        "tags": ["Attempts"],
+        "summary": "Получить результат попытки",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "aa0e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Результат попытки",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Attempt"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "quiz": {
+                          "$ref": "#/components/schemas/Quiz"
+                        },
+                        "attemptAnswers": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "questionId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "answerId": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "isCorrect": {
+                                "type": "boolean"
+                              },
+                              "question": {
+                                "$ref": "#/components/schemas/Question"
+                              },
+                              "answer": {
+                                "$ref": "#/components/schemas/Answer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "example": {
+                  "id": "aa0e8400-e29b-41d4-a716-446655440000",
+                  "userId": "550e8400-e29b-41d4-a716-446655440000",
+                  "quizId": "770e8400-e29b-41d4-a716-446655440000",
+                  "startedAt": "2024-01-15T10:30:00.000Z",
+                  "completedAt": "2024-01-15T11:00:00.000Z",
+                  "score": 8,
+                  "maxScore": 10,
+                  "status": "COMPLETED",
+                  "quiz": {
+                    "id": "770e8400-e29b-41d4-a716-446655440000",
+                    "title": "JavaScript Основы",
+                    "description": "Тест на знание основ JavaScript"
+                  },
+                  "attemptAnswers": [
+                    {
+                      "questionId": "880e8400-e29b-41d4-a716-446655440000",
+                      "answerId": "990e8400-e29b-41d4-a716-446655440000",
+                      "isCorrect": true,
+                      "question": {
+                        "text": "Что такое замыкание в JavaScript?",
+                        "points": 1
+                      },
+                      "answer": {
+                        "text": "Функция, которая имеет доступ к переменным внешней функции"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Не авторизован"
+          },
+          "403": {
+            "description": "Доступ запрещен"
+          },
+          "404": {
+            "description": "Попытка не найдена"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Эндпоинты для регистрации, входа и управления токенами"
+    },
+    {
+      "name": "Categories",
+      "description": "Управление категориями квизов"
+    },
+    {
+      "name": "Quizzes",
+      "description": "Управление квизами"
+    },
+    {
+      "name": "Questions",
+      "description": "Управление вопросами квизов"
+    },
+    {
+      "name": "Answers",
+      "description": "Управление вариантами ответов"
+    },
+    {
+      "name": "Attempts",
+      "description": "Управление попытками прохождения квизов"
+    }
+  ]
+}

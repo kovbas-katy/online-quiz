@@ -12,6 +12,41 @@ import { SubmitAnswerDto } from './dto/submit-answer.dto';
 export class AttemptsService {
   constructor(private prisma: PrismaService) {}
 
+  async findAllByUser(userId: string) {
+    const attempts = await this.prisma.attempt.findMany({
+      where: { userId },
+      include: {
+        quiz: {
+          select: {
+            id: true,
+            title: true,
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { startedAt: 'desc' },
+    });
+
+    return attempts.map((attempt) => ({
+      id: attempt.id,
+      quiz: attempt.quiz,
+      status: attempt.status,
+      score: attempt.score,
+      maxScore: attempt.maxScore,
+      percentage:
+        attempt.maxScore && attempt.score
+          ? Math.round((attempt.score / attempt.maxScore) * 100)
+          : null,
+      startedAt: attempt.startedAt,
+      completedAt: attempt.completedAt,
+    }));
+  }
+
   async start(userId: string, startAttemptDto: StartAttemptDto) {
     const quiz = await this.prisma.quiz.findUnique({
       where: { id: startAttemptDto.quizId },

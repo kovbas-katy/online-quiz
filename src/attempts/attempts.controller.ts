@@ -10,6 +10,12 @@ import { CurrentUser } from '../decorators/current-user.decorator';
 export class AttemptsController {
   constructor(private readonly attemptsService: AttemptsService) {}
 
+  // все попытки текущего пользователя
+  @Get()
+  findAll(@CurrentUser('id') userId: string) {
+    return this.attemptsService.findAllByUser(userId);
+  }
+
   // старт попытки (начать квиз)
   @Post('start')
   async start(

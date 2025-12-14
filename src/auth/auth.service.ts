@@ -7,6 +7,8 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { LoginDto } from '../users/dto/login.dto';
 import { JwtPayload } from './strategies/jwt.strategy';
 import { RefreshTokenDto } from '../users/dto/refresh-token.dto';
+import { TokensDto } from './dto/tokens.dto';
+import { AuthResponse } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +18,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async register(createUserDto: CreateUserDto) {
+  async register(createUserDto: CreateUserDto): Promise<AuthResponse> {
     const user = await this.usersService.create(createUserDto);
     const tokens = await this.generateTokens(user.id, user.username);
     await this.usersService.updateRefreshToken(user.id, tokens.refreshToken);
@@ -27,7 +29,7 @@ export class AuthService {
     };
   }
 
-  async login(loginDto: LoginDto) {
+  async login(loginDto: LoginDto): Promise<AuthResponse> {
     const user = await this.usersService.findByUsername(loginDto.username);
 
     if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
@@ -76,7 +78,7 @@ export class AuthService {
     await this.usersService.updateRefreshToken(userId, null);
   }
 
-  private async generateTokens(userId: string, username: string) {
+  private async generateTokens(userId: string, username: string): Promise<TokensDto> {
     const payload = { sub: userId, username };
 
     const [accessToken, refreshToken] = await Promise.all([

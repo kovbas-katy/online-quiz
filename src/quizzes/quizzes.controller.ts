@@ -13,6 +13,9 @@ import { QuizzesService } from './quizzes.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { QuizOwnerGuard } from './guards/quiz-owner.guard';
+import { CurrentUser } from '../decorators/current-user.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('quizzes')
 export class QuizzesController {
@@ -21,8 +24,11 @@ export class QuizzesController {
   // создать квиз
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() createQuizDto: CreateQuizDto) {
-    return this.quizzesService.create(createQuizDto);
+  create(
+    @Body() createQuizDto: CreateQuizDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return this.quizzesService.create(createQuizDto, userId);
   }
 
   // список квизов
@@ -35,6 +41,19 @@ export class QuizzesController {
   @Get('search')
   search(@Query('q') query: string, @Query('categoryId') categoryId?: string) {
     return this.quizzesService.search(query, categoryId);
+  }
+
+  // квизы текущего пользователя (для админа — все)
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  getMyQuizzes(
+    @CurrentUser('id') userId: string,
+    @CurrentUser('role') role: Role,
+  ) {
+    if (role === Role.ADMIN) {
+      return this.quizzesService.findAll();
+    }
+    return this.quizzesService.findByUser(userId);
   }
 
   // лидерборд квиза
@@ -51,14 +70,14 @@ export class QuizzesController {
 
   // обновить квиз
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, QuizOwnerGuard)
   update(@Param('id') id: string, @Body() updateQuizDto: UpdateQuizDto) {
     return this.quizzesService.update(id, updateQuizDto);
   }
 
   // удалить квиз
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, QuizOwnerGuard)
   remove(@Param('id') id: string) {
     return this.quizzesService.remove(id);
   }

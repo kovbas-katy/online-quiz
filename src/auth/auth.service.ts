@@ -20,7 +20,7 @@ export class AuthService {
 
   async register(createUserDto: CreateUserDto): Promise<AuthResponse> {
     const user = await this.usersService.create(createUserDto);
-    const tokens = await this.generateTokens(user.id, user.username);
+    const tokens = await this.generateTokens(user.id, user.username, user.role);
     await this.usersService.updateRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -36,7 +36,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const tokens = await this.generateTokens(user.id, user.username);
+    const tokens = await this.generateTokens(user.id, user.username, user.role);
     await this.usersService.updateRefreshToken(user.id, tokens.refreshToken);
 
     return {
@@ -44,6 +44,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
+        role: user.role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
@@ -52,9 +53,13 @@ export class AuthService {
   }
 
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
-    const decoded: JwtPayload = this.jwtService.decode(
+    const decoded = this.jwtService.decode(
       refreshTokenDto.refreshToken,
-    );
+    ) as JwtPayload | null;
+
+    if (!decoded?.sub) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
 
     const userId = decoded.sub;
 
@@ -68,7 +73,7 @@ export class AuthService {
     }
 
     const user = await this.usersService.findById(userId);
-    const tokens = await this.generateTokens(user.id, user.username);
+    const tokens = await this.generateTokens(user.id, user.username, user.role);
     await this.usersService.updateRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
@@ -78,8 +83,8 @@ export class AuthService {
     await this.usersService.updateRefreshToken(userId, null);
   }
 
-  private async generateTokens(userId: string, username: string): Promise<TokensDto> {
-    const payload = { sub: userId, username };
+  private async generateTokens(userId: string, username: string, role: string): Promise<TokensDto> {
+    const payload = { sub: userId, username, role };
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload, {

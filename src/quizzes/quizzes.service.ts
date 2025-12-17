@@ -8,11 +8,17 @@ import { Prisma } from '@prisma/client';
 export class QuizzesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createQuizDto: CreateQuizDto) {
+  async create(createQuizDto: CreateQuizDto, authorId: string) {
     return this.prisma.quiz.create({
-      data: createQuizDto,
+      data: {
+        ...createQuizDto,
+        authorId,
+      },
       include: {
         category: true,
+        author: {
+          select: { id: true, username: true },
+        },
       },
     });
   }
@@ -21,6 +27,9 @@ export class QuizzesService {
     return this.prisma.quiz.findMany({
       include: {
         category: true,
+        author: {
+          select: { id: true, username: true },
+        },
         _count: {
           select: { questions: true, attempts: true },
         },
@@ -34,6 +43,9 @@ export class QuizzesService {
       where: { id },
       include: {
         category: true,
+        author: {
+          select: { id: true, username: true },
+        },
         questions: {
           orderBy: { order: 'asc' },
           include: {
@@ -62,6 +74,9 @@ export class QuizzesService {
       data: updateQuizDto,
       include: {
         category: true,
+        author: {
+          select: { id: true, username: true },
+        },
       },
     });
   }
@@ -115,6 +130,19 @@ export class QuizzesService {
           : 0,
       completedAt: attempt.completedAt,
     }));
+  }
+
+  async findByUser(userId: string) {
+    return this.prisma.quiz.findMany({
+      where: { authorId: userId },
+      include: {
+        category: true,
+        _count: {
+          select: { questions: true, attempts: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async search(query: string, categoryId?: string) {

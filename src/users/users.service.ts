@@ -33,6 +33,7 @@ export class UsersService {
         id: true,
         email: true,
         username: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -44,6 +45,16 @@ export class UsersService {
   async findByUsername(username: string) {
     return this.prisma.user.findUnique({
       where: { username },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        password: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        refreshToken: true,
+      },
     });
   }
 
@@ -54,6 +65,7 @@ export class UsersService {
         id: true,
         email: true,
         username: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -78,6 +90,9 @@ export class UsersService {
   async validateRefreshToken(userId: string, refreshToken: string): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      select: {
+        refreshToken: true,
+      },
     });
 
     if (!user || !user.refreshToken) {

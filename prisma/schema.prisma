@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  password     String
+  role         Role      @default(USER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  attempts     Attempt[]
+  quizzes      Quiz[]    @relation("QuizAuthor")
+  refreshToken String?
+
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quizzes   Quiz[]
+
+  @@map("categories")
+}
+
+model Quiz {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User       @relation("QuizAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  timeLimit   Int?       // in seconds
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  questions   Question[]
+  attempts    Attempt[]
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@map("quizzes")
+}
+
+model Question {
+  id             String          @id @default(uuid())
+  quizId         String
+  quiz           Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text           String
+  order          Int
+  points         Int             @default(1)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  answers        Answer[]
+  attemptAnswers AttemptAnswer[]
+
+  @@index([quizId])
+  @@map("questions")
+}
+
+model Answer {
+  id             String          @id @default(uuid())
+  questionId     String
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text           String
+  isCorrect      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  attemptAnswers AttemptAnswer[]
+
+  @@index([questionId])
+  @@map("answers")
+}
+
+model Attempt {
+  id             String          @id @default(uuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId         String
+  quiz           Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  startedAt      DateTime        @default(now())
+  completedAt    DateTime?
+  score          Int?
+  maxScore       Int?
+  status         AttemptStatus   @default(IN_PROGRESS)
+  attemptAnswers AttemptAnswer[]
+
+  @@index([userId])
+  @@index([quizId])
+  @@map("attempts")
+}
+
+model AttemptAnswer {
+  id         String   @id @default(uuid())
+  attemptId  String
+  attempt    Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answerId   String?
+  answer     Answer?  @relation(fields: [answerId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+  @@map("attempt_answers")
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}

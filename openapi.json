@@ -1,0 +1,1261 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Online Quiz API",
+    "description": "API для онлайн-квизов с аутентификацией, категориями, вопросами и попытками прохождения",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "Аутентификация и авторизация" },
+    { "name": "Categories", "description": "Управление категориями квизов" },
+    { "name": "Quizzes", "description": "Управление квизами" },
+    { "name": "Questions", "description": "Управление вопросами" },
+    { "name": "Answers", "description": "Управление вариантами ответов" },
+    { "name": "Attempts", "description": "Прохождение квизов" }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Регистрация пользователя",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateUserDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Пользователь зарегистрирован",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "400": { "description": "Некорректные данные" },
+          "409": { "description": "Пользователь уже существует" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Вход в систему",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Успешный вход",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "401": { "description": "Неверные учетные данные" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Обновление токена",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RefreshTokenDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Токен обновлен",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "401": { "description": "Недействительный refresh token" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Выход из системы",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Успешный выход",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" }
+        }
+      }
+    },
+    "/categories": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Список категорий",
+        "responses": {
+          "200": {
+            "description": "Список категорий",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Category" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Categories"],
+        "summary": "Создать категорию",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateCategoryDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Категория создана",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Category" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" }
+        }
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "tags": ["Categories"],
+        "summary": "Получить категорию по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Категория",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Category" }
+              }
+            }
+          },
+          "404": { "description": "Категория не найдена" }
+        }
+      },
+      "put": {
+        "tags": ["Categories"],
+        "summary": "Обновить категорию",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateCategoryDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Категория обновлена",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Category" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Категория не найдена" }
+        }
+      },
+      "delete": {
+        "tags": ["Categories"],
+        "summary": "Удалить категорию",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Категория удалена",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Category" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Категория не найдена" }
+        }
+      }
+    },
+    "/quizzes": {
+      "get": {
+        "tags": ["Quizzes"],
+        "summary": "Список квизов",
+        "responses": {
+          "200": {
+            "description": "Список квизов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Quiz" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Quizzes"],
+        "summary": "Создать квиз",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateQuizDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Квиз создан",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Quiz" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" }
+        }
+      }
+    },
+    "/quizzes/search": {
+      "get": {
+        "tags": ["Quizzes"],
+        "summary": "Поиск квизов",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Поисковый запрос"
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Фильтр по категории"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Результаты поиска",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Quiz" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quizzes/{id}": {
+      "get": {
+        "tags": ["Quizzes"],
+        "summary": "Получить квиз по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Квиз",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/QuizWithQuestions" }
+              }
+            }
+          },
+          "404": { "description": "Квиз не найден" }
+        }
+      },
+      "put": {
+        "tags": ["Quizzes"],
+        "summary": "Обновить квиз",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateQuizDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Квиз обновлен",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Quiz" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Квиз не найден" }
+        }
+      },
+      "delete": {
+        "tags": ["Quizzes"],
+        "summary": "Удалить квиз",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Квиз удален",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Quiz" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Квиз не найден" }
+        }
+      }
+    },
+    "/quizzes/{id}/leaderboard": {
+      "get": {
+        "tags": ["Quizzes"],
+        "summary": "Лидерборд квиза",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 10 },
+            "description": "Количество записей"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Лидерборд",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/LeaderboardEntry" }
+                }
+              }
+            }
+          },
+          "404": { "description": "Квиз не найден" }
+        }
+      }
+    },
+    "/questions": {
+      "get": {
+        "tags": ["Questions"],
+        "summary": "Вопросы квиза",
+        "parameters": [
+          {
+            "name": "quizId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "ID квиза"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список вопросов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Question" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Questions"],
+        "summary": "Создать вопрос",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateQuestionDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Вопрос создан",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Question" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" }
+        }
+      }
+    },
+    "/questions/{id}": {
+      "get": {
+        "tags": ["Questions"],
+        "summary": "Получить вопрос по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Вопрос",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/QuestionWithAnswers" }
+              }
+            }
+          },
+          "404": { "description": "Вопрос не найден" }
+        }
+      },
+      "put": {
+        "tags": ["Questions"],
+        "summary": "Обновить вопрос",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateQuestionDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Вопрос обновлен",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Question" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Вопрос не найден" }
+        }
+      },
+      "delete": {
+        "tags": ["Questions"],
+        "summary": "Удалить вопрос",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Вопрос удален",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Question" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Вопрос не найден" }
+        }
+      }
+    },
+    "/answers": {
+      "get": {
+        "tags": ["Answers"],
+        "summary": "Варианты ответа вопроса",
+        "parameters": [
+          {
+            "name": "questionId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "ID вопроса"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Список вариантов ответа",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Answer" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Answers"],
+        "summary": "Добавить вариант ответа",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateAnswerDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Вариант ответа создан",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Answer" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" }
+        }
+      }
+    },
+    "/answers/{id}": {
+      "get": {
+        "tags": ["Answers"],
+        "summary": "Получить вариант ответа по ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Вариант ответа",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Answer" }
+              }
+            }
+          },
+          "404": { "description": "Вариант ответа не найден" }
+        }
+      },
+      "put": {
+        "tags": ["Answers"],
+        "summary": "Обновить вариант ответа",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UpdateAnswerDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Вариант ответа обновлен",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Answer" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Вариант ответа не найден" }
+        }
+      },
+      "delete": {
+        "tags": ["Answers"],
+        "summary": "Удалить вариант ответа",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Вариант ответа удален",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Answer" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Вариант ответа не найден" }
+        }
+      }
+    },
+    "/attempts": {
+      "get": {
+        "tags": ["Attempts"],
+        "summary": "Все попытки текущего пользователя",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Список попыток",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AttemptSummary" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" }
+        }
+      }
+    },
+    "/attempts/start": {
+      "post": {
+        "tags": ["Attempts"],
+        "summary": "Начать прохождение квиза",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/StartAttemptDto" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Попытка начата",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AttemptStart" }
+              }
+            }
+          },
+          "400": { "description": "Квиз не имеет вопросов" },
+          "401": { "description": "Не авторизован" },
+          "404": { "description": "Квиз не найден" }
+        }
+      }
+    },
+    "/attempts/{id}": {
+      "get": {
+        "tags": ["Attempts"],
+        "summary": "Состояние попытки",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Состояние попытки",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AttemptState" }
+              }
+            }
+          },
+          "401": { "description": "Не авторизован" },
+          "403": { "description": "Нет доступа к этой попытке" },
+          "404": { "description": "Попытка не найдена" }
+        }
+      }
+    },
+    "/attempts/{id}/answer": {
+      "post": {
+        "tags": ["Attempts"],
+        "summary": "Отправить ответ на вопрос",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SubmitAnswerDto" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ответ принят",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MessageResponse" }
+              }
+            }
+          },
+          "400": { "description": "Попытка не в процессе" },
+          "401": { "description": "Не авторизован" },
+          "403": { "description": "Нет доступа к этой попытке" },
+          "404": { "description": "Попытка или вопрос не найден" }
+        }
+      }
+    },
+    "/attempts/{id}/complete": {
+      "post": {
+        "tags": ["Attempts"],
+        "summary": "Завершить попытку",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Попытка завершена",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AttemptComplete" }
+              }
+            }
+          },
+          "400": { "description": "Попытка не в процессе" },
+          "401": { "description": "Не авторизован" },
+          "403": { "description": "Нет доступа к этой попытке" },
+          "404": { "description": "Попытка не найдена" }
+        }
+      }
+    },
+    "/attempts/{id}/result": {
+      "get": {
+        "tags": ["Attempts"],
+        "summary": "Результат попытки",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Результат попытки",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AttemptResult" }
+              }
+            }
+          },
+          "400": { "description": "Попытка еще не завершена" },
+          "401": { "description": "Не авторизован" },
+          "403": { "description": "Нет доступа к этой попытке" },
+          "404": { "description": "Попытка не найдена" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "CreateUserDto": {
+        "type": "object",
+        "required": ["email", "username", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "username": { "type": "string", "minLength": 3 },
+          "password": { "type": "string", "minLength": 6 }
+        }
+      },
+      "LoginDto": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "username": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "required": ["refreshToken"],
+        "properties": {
+          "refreshToken": { "type": "string" }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": { "type": "string" },
+          "refreshToken": { "type": "string" },
+          "user": { "$ref": "#/components/schemas/User" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string", "format": "email" },
+          "username": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" }
+        }
+      },
+      "CreateCategoryDto": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 }
+        }
+      },
+      "UpdateCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 }
+        }
+      },
+      "Category": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateQuizDto": {
+        "type": "object",
+        "required": ["title", "categoryId"],
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "categoryId": { "type": "string", "format": "uuid" },
+          "timeLimit": { "type": "integer", "minimum": 1, "nullable": true, "description": "Лимит времени в секундах" }
+        }
+      },
+      "UpdateQuizDto": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "categoryId": { "type": "string", "format": "uuid" },
+          "timeLimit": { "type": "integer", "minimum": 1, "nullable": true }
+        }
+      },
+      "Quiz": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "categoryId": { "type": "string", "format": "uuid" },
+          "timeLimit": { "type": "integer", "nullable": true },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "category": { "$ref": "#/components/schemas/Category" }
+        }
+      },
+      "QuizWithQuestions": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Quiz" },
+          {
+            "type": "object",
+            "properties": {
+              "questions": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/QuestionWithAnswers" }
+              }
+            }
+          }
+        ]
+      },
+      "CreateQuestionDto": {
+        "type": "object",
+        "required": ["quizId", "text", "order", "points"],
+        "properties": {
+          "quizId": { "type": "string", "format": "uuid" },
+          "text": { "type": "string" },
+          "order": { "type": "integer", "minimum": 1 },
+          "points": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "UpdateQuestionDto": {
+        "type": "object",
+        "properties": {
+          "quizId": { "type": "string", "format": "uuid" },
+          "text": { "type": "string" },
+          "order": { "type": "integer", "minimum": 1 },
+          "points": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "quizId": { "type": "string", "format": "uuid" },
+          "text": { "type": "string" },
+          "order": { "type": "integer" },
+          "points": { "type": "integer" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "QuestionWithAnswers": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Question" },
+          {
+            "type": "object",
+            "properties": {
+              "answers": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Answer" }
+              }
+            }
+          }
+        ]
+      },
+      "CreateAnswerDto": {
+        "type": "object",
+        "required": ["questionId", "text", "isCorrect"],
+        "properties": {
+          "questionId": { "type": "string", "format": "uuid" },
+          "text": { "type": "string" },
+          "isCorrect": { "type": "boolean" }
+        }
+      },
+      "UpdateAnswerDto": {
+        "type": "object",
+        "properties": {
+          "questionId": { "type": "string", "format": "uuid" },
+          "text": { "type": "string" },
+          "isCorrect": { "type": "boolean" }
+        }
+      },
+      "Answer": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "questionId": { "type": "string", "format": "uuid" },
+          "text": { "type": "string" },
+          "isCorrect": { "type": "boolean" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AnswerPublic": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "text": { "type": "string" }
+        }
+      },
+      "StartAttemptDto": {
+        "type": "object",
+        "required": ["quizId"],
+        "properties": {
+          "quizId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "SubmitAnswerDto": {
+        "type": "object",
+        "required": ["questionId", "answerId"],
+        "properties": {
+          "questionId": { "type": "string", "format": "uuid" },
+          "answerId": { "type": "string", "format": "uuid" }
+        }
+      },
+      "AttemptStatus": {
+        "type": "string",
+        "enum": ["IN_PROGRESS", "COMPLETED", "ABANDONED"]
+      },
+      "AttemptStart": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "quizId": { "type": "string", "format": "uuid" },
+          "startedAt": { "type": "string", "format": "date-time" },
+          "timeLimit": { "type": "integer", "nullable": true },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "format": "uuid" },
+                "text": { "type": "string" },
+                "order": { "type": "integer" },
+                "points": { "type": "integer" },
+                "answers": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AnswerPublic" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AttemptState": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "status": { "$ref": "#/components/schemas/AttemptStatus" },
+          "startedAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time", "nullable": true },
+          "score": { "type": "integer", "nullable": true },
+          "maxScore": { "type": "integer", "nullable": true },
+          "timeLimit": { "type": "integer", "nullable": true },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "format": "uuid" },
+                "text": { "type": "string" },
+                "order": { "type": "integer" },
+                "points": { "type": "integer" },
+                "answers": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/AnswerPublic" }
+                },
+                "userAnswer": { "type": "string", "format": "uuid", "nullable": true }
+              }
+            }
+          }
+        }
+      },
+      "AttemptComplete": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "status": { "$ref": "#/components/schemas/AttemptStatus" },
+          "score": { "type": "integer" },
+          "maxScore": { "type": "integer" },
+          "completedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AttemptResult": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "quiz": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "title": { "type": "string" }
+            }
+          },
+          "score": { "type": "integer" },
+          "maxScore": { "type": "integer" },
+          "percentage": { "type": "integer" },
+          "startedAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time" },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "text": { "type": "string" },
+                    "points": { "type": "integer" }
+                  }
+                },
+                "userAnswer": {
+                  "type": "object",
+                  "nullable": true,
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "text": { "type": "string" },
+                    "isCorrect": { "type": "boolean" }
+                  }
+                },
+                "correctAnswer": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "text": { "type": "string" }
+                  }
+                },
+                "isCorrect": { "type": "boolean" },
+                "pointsEarned": { "type": "integer" }
+              }
+            }
+          }
+        }
+      },
+      "LeaderboardEntry": {
+        "type": "object",
+        "properties": {
+          "userId": { "type": "string", "format": "uuid" },
+          "username": { "type": "string" },
+          "score": { "type": "integer" },
+          "maxScore": { "type": "integer" },
+          "percentage": { "type": "integer" },
+          "completedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "AttemptSummary": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "quiz": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "title": { "type": "string" },
+              "category": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string", "format": "uuid" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          },
+          "status": { "$ref": "#/components/schemas/AttemptStatus" },
+          "score": { "type": "integer", "nullable": true },
+          "maxScore": { "type": "integer", "nullable": true },
+          "percentage": { "type": "integer", "nullable": true },
+          "startedAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      }
+    }
+  }
+}
